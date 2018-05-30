@@ -2,17 +2,15 @@ if (typeof jQuery === 'undefined') {
   throw new TypeError('Greetr requires jQuery, which must be included before Greetr\'s script.');
 }
 
-// IIFE to create a new execution context
-// Safe code, no collisions
+// IIFE to create a new execution context - safe code, no collisions
 (function (global, $) {
   const Greetr = function (firstName, lastName, language) {
-    // use the Greetr.init function constructor to generate the object
-    // this way a Greetr object can be created without 'new' keyword
+    // Use the Greetr.init function constructor to generate the Greetr object,
+    // this way it can be created without 'new' keyword
     return new Greetr.init(firstName, lastName, language);
   };
 
-  // internal variables, inacessible ouside IIFE scope
-  // used in resulting closure
+  // Internal variables, inacessible ouside IIFE scope
   const supportedLanguages = ['en', 'es', 'hip'];
   const greetings = {
     en: 'Hello',
@@ -30,18 +28,20 @@ if (typeof jQuery === 'undefined') {
     hip: 'Signed in, totes amazeballs'
   };
 
-  // Available props / methods on prototype
+  // Available props / methods go on prototype
   Greetr.prototype = {
     fullName: function () {
       return `${this.firstName} ${this.lastName}`;
     },
-
+    // Check that selected language is valid
+    // references externally inacessible 'supportedLanguages' within the closure
     validate: function () {
       if (supportedLanguages.indexOf(this.language) === -1) {
         throw new TypeError('Invalid language');
       }
     },
 
+    // Dynamically retrieve messages based on language via bracket notation
     greeting: function () {
       return `${greetings[this.language]} ${this.firstName}!`;
     },
@@ -49,14 +49,14 @@ if (typeof jQuery === 'undefined') {
     formalGreeting: function () {
       return `${formalGreetings[this.language]} ${this.fullName()}.`;
     },
-    // chainable methods
+    // Chainable methods returning their own containing object
     greet: function (formal) {
       let msg = formal ? this.formalGreeting() : this.greeting();
 
       if (console) {
         console.log(msg);
       }
-      // this refers to the calling object at execution time
+      // 'this' refers to the calling object at execution time
       // makes the method chainable
       return this;
     },
@@ -66,31 +66,53 @@ if (typeof jQuery === 'undefined') {
         console.log(`${logMessages[this.language]}: ${this.fullName()}.`);
       }
 
+      // Make chainable
       return this;
     },
 
+    // Provide a language setter
     setLanguage: function (language) {
       this.language = language;
       this.validate();
 
+      // Make chainable
+      return this;
+    },
+
+    // Adding jQuery support
+    HTMLGreeting: function (selector, formal) {
+      if (!$) {
+        throw new TypeError('jQuery not loaded.');
+      }
+      if (!selector) {
+        throw new ReferenceError('Missing jQuery selector.');
+      }
+      let msg = formal ? this.formalGreeting() : this.greeting();
+
+      // Inject message in the DOM
+      $(selector).html(msg);
+
+      // Make chainable
       return this;
     }
   };
 
   // actual function constructor
   Greetr.init = function (firstName, lastName, language) {
-    // futureproofing - not needed now,
+    // Futureproofing - not needed now,
     // doing it so that we don't have to worry about what 'this' points to later
     const self = this;
     self.firstName = firstName || '';
     self.lastName = lastName || '';
     self.language = language || 'en';
+
+    self.validate();
   };
 
   // Ensure that the prototype chain connects to our Greetr.prototype and not the
   // default created when Greetr.init is invoked
   Greetr.init.prototype = Greetr.prototype;
 
-  // attach our Greetr function to the global object
+  // Attach our Greetr function to the global object, and provide a shorthand
   global.Greetr = global.G$ = Greetr;
 }(window, jQuery));
