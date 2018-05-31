@@ -1,9 +1,6 @@
-if (typeof jQuery === 'undefined') {
-  throw new TypeError('Greetr requires jQuery, which must be included before Greetr\'s script.');
-}
-
 // IIFE to create a new execution context - safe code, no collisions
 (function (global, $) {
+  'use strict';
   const Greetr = function (firstName, lastName, language) {
     // Use the Greetr.init function constructor to generate the Greetr object,
     // this way it can be created without 'new' keyword
@@ -79,18 +76,15 @@ if (typeof jQuery === 'undefined') {
       return this;
     },
 
-    // Adding jQuery support
+    // Add message to selector's innerHTML via document.querySelector
     HTMLGreeting: function (selector, formal) {
-      if (!$) {
-        throw new TypeError('jQuery not loaded.');
-      }
       if (!selector) {
-        throw new ReferenceError('Missing jQuery selector.');
+        throw new ReferenceError('Missing DOM selector.');
       }
       let msg = formal ? this.formalGreeting() : this.greeting();
 
       // Inject message in the DOM
-      $(selector).html(msg);
+      window.document.querySelector(selector).innerHTML = msg;
 
       // Make chainable
       return this;
@@ -115,4 +109,4 @@ if (typeof jQuery === 'undefined') {
 
   // Attach our Greetr function to the global object, and provide a shorthand
   global.Greetr = global.G$ = Greetr;
-}(window, jQuery));
+}(window));
